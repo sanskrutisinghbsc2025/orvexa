@@ -33,7 +33,7 @@ var branchListCmd = &cobra.Command{
 		current, _ := r.CurrentBranch()
 		branches, err := r.ListBranches()
 		if err != nil {
-			ui.PrintError("Failed to list branches")
+			ui.PrintError("Failed to list branches: " + err.Error())
 			return
 		}
 
@@ -79,10 +79,11 @@ var branchSwitchCmd = &cobra.Command{
 		name := args[0]
 		err = r.SwitchBranch(name)
 		if err != nil {
-			ui.PrintError("Branch '" + name + "' does not exist.")
-		} else {
-			ui.PrintSuccess("Switched to branch '" + name + "'.")
+			ui.PrintError("Failed to switch to branch '" + name + "': " + err.Error())
+			return
 		}
+
+		ui.PrintSuccess("Switched to branch '" + name + "'.")
 	},
 }
 

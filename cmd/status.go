@@ -41,13 +41,18 @@ var statusCmd = &cobra.Command{
 
 		if status.IsClean() {
 			ui.PrintSuccess("Orvexa network is healthy and synchronized.")
+			return
+		}
+
+		// resume.json may not exist in the status map when there
+		// are changes only in other files, so check safely.
+		resumeStatus, exists := status["resume.json"]
+
+		if exists && resumeStatus.Worktree == git.Unmodified {
+			ui.PrintSuccess("Orvexa network is healthy (metadata changes ignored).")
 		} else {
-			if status["resume.json"].Worktree == git.Unmodified {
-				ui.PrintSuccess("Orvexa network is healthy (metadata changes ignored).")
-			} else {
-				ui.PrintWarning("Uncommitted changes detected in the network.")
-				ui.PrintInfo("Run 'orvexa commit' to protect this version.")
-			}
+			ui.PrintWarning("Uncommitted changes detected in the network.")
+			ui.PrintInfo("Run 'orvexa commit' to protect this version.")
 		}
 	},
 }
