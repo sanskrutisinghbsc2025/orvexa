@@ -72,13 +72,12 @@ func (r *Repo) CreateBranch(name string) error {
 
 // SwitchBranch switches to an existing branch.
 func (r *Repo) SwitchBranch(name string) error {
-	w, err := r.gitRepo.Worktree()
+	cmd := exec.Command("git", "switch", name)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s", string(output))
 	}
-	return w.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.NewBranchReferenceName(name),
-	})
+	return nil
 }
 
 // DeleteBranch deletes a branch by name.
