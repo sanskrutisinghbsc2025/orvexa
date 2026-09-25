@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: "Helvetica", "Arial", sans-serif; padding: 60px; line-height: 1.6; color: #333; max-width: 800px; margin: auto; }
+        .name { font-size: 24pt; font-weight: 300; letter-spacing: -1px; margin-bottom: 0; }
+        .contact { font-size: 10pt; color: #777; margin-bottom: 40px; }
+        .section-header { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #999; margin-top: 40px; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .entry { margin-bottom: 25px; }
+        .entry-title { font-weight: 700; font-size: 11pt; }
+        .entry-meta { display: flex; justify-content: space-between; font-size: 9pt; color: #666; margin-bottom: 5px; }
+        ul { margin: 5px 0; padding-left: 0; list-style: none; }
+        li { margin-bottom: 8px; position: relative; padding-left: 15px; text-align: justify; }
+        li::before { content: "—"; position: absolute; left: 0; color: #ccc; }
+        .skills-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; font-size: 10pt; }
+        .skill-cat { font-weight: 700; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="name">{{.Basics.Name}}</div>
+    <div class="contact">
+        {{.Basics.Email}} &middot; {{.Basics.Phone}} &middot;  {{.Basics.LinkedIn}}
+    </div>
+
+    {{range .SectionOrder}}
+        {{if eq . "experience"}}
+            <div class="section-header">Experience</div>
+            {{range $.Experience}}
+                <div class="entry">
+                    <div class="entry-meta"><span>{{.Company}}</span><span>{{.Date}}</span></div>
+                    <div class="entry-title">{{.Role}}</div>
+                    <ul>{{range .Points}}<li>{{.}}</li>{{end}}</ul>
+                </div>
+            {{end}}
+        {{else if eq . "projects"}}
+            <div class="section-header">Projects</div>
+            {{range $.Projects}}
+                <div class="entry">
+                    <div class="entry-meta"><span>{{.Name}}</span><span>{{.Tech}}</span></div>
+                    <ul>{{range .Points}}<li>{{.}}</li>{{end}}</ul>
+                </div>
+            {{end}}
+        {{else if eq . "education"}}
+            <div class="section-header">Education</div>
+            {{range $.Education}}
+                <div class="entry">
+                    <div class="entry-meta"><span>{{.School}}</span><span>{{.Date}}</span></div>
+                    <div class="entry-title">{{.Degree}}</div>
+                    <div style="font-size: 9pt">{{if .CGPA}}GPA: {{.CGPA}}{{end}}</div>
+                </div>
+            {{end}}
+        {{else if eq . "skills"}}
+            <div class="section-header">Technical Skills</div>
+            <div class="skills-grid">
+                {{range $cat, $val := $.Skills}}
+                    <div class="skill-cat">{{$cat}}</div>
+                    <div>{{$val}}</div>
+                {{end}}
+            </div>
+        {{end}}
+    {{end}}
+</body>
+</html>

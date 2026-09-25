@@ -1,0 +1,51 @@
+{
+  "basics": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1 555-0199",
+    "linkedin": "linkedin.com/in/johndoe",
+    "github": "github.com/johndoe"
+  },
+  "sectionOrder": [
+    "education",
+    "skills",
+    "experience",
+    "projects"
+  ],
+  "education": [
+    {
+      "school": "University of Technology",
+      "degree": "B.S. in Computer Science",
+      "date": "2018 - 2022",
+      "cgpa": "3.9/4.0",
+      "location": "San Francisco, CA"
+    }
+  ],
+  "skills": {
+    "AI/ML": "PyTorch, Scikit-Learn, OpenAI API",
+    "Cloud": "AWS, Docker, Kubernetes",
+    "Languages": "Golang, Python, TypeScript, SQL"
+  },
+  "experience": [
+    {
+      "company": "Tech Solutions Inc.",
+      "role": "Software Engineer",
+      "date": "2022 - Present",
+      "points": [
+        "Led development of a high-throughput data pipeline in Go.",
+        "Reduced cloud infrastructure costs by 25% through container optimization.",
+        "Mentored junior developers on best practices for version control."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Distributed Crawler",
+      "tech": "Golang, Redis, Docker",
+      "points": [
+        "Built a concurrent web crawler capable of processing 10k pages/minute.",
+        "Implemented Redis-based deduplication logic to prevent redundant crawls."
+      ]
+    }
+  ]
+}
