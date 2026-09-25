@@ -132,25 +132,34 @@ func (r *Repo) Restore(shortHash string, force bool) (string, error) {
 		return "", fmt.Errorf("version [%s] not found", shortHash)
 	}
 
-	w, err := r.gitRepo.Worktree()
+	// Only protect against uncommitted changes to resume.json.
+	// Use system Git here because it gives reliable worktree status
+	// on Windows/Git Bash.
+	statusCmd := exec.Command("git", "status", "--porcelain", "--", "resume.json")
+	output, err := statusCmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to check resume status: %s", string(output))
 	}
 
-	if !force {
-		status, _ := w.Status()
-		if !status.IsClean() {
-			return "", fmt.Errorf("unsaved changes detected; use --force to overwrite")
-		}
+	if !force && len(output) > 0 {
+		return "", fmt.Errorf("unsaved changes detected; use --force to overwrite")
 	}
 
-	err = w.Checkout(&git.CheckoutOptions{
-		Hash:  *fullHash,
-		Force: true,
-	})
+	// Restore only resume.json from the requested version.
+	// This keeps the user on the current branch.
+	checkoutCmd := exec.Command(
+		"git",
+		"checkout",
+		fullHash.String(),
+		"--",
+		"resume.json",
+	)
+
+	output, err = checkoutCmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to restore version: %s", string(output))
 	}
+
 	return fullHash.String(), nil
 }
 
