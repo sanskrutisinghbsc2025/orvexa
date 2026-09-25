@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+
 	"orvexa/internal/resume"
 
 	"github.com/spf13/cobra"
@@ -26,39 +27,54 @@ var editCmd = &cobra.Command{
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			data, err := resume.ReadRaw()
 			if err != nil {
-				http.Error(w, "[ERROR] resume.json not found. Run 'orvexa init' first.", 404)
+				http.Error(w, "[ERROR] resume.json not found. Run 'orvexa init' first.", http.StatusNotFound)
 				return
 			}
-			tmpl, _ := template.New("editor").Parse(editorTemplateContent)
-			// Pass as template.HTML to preserve JSON quotes
-			tmpl.Execute(w, template.HTML(data))
+
+			tmpl, err := template.New("editor").Parse(editorTemplateContent)
+			if err != nil {
+				http.Error(w, "[ERROR] failed to load editor template.", http.StatusInternalServerError)
+				return
+			}
+
+			if err := tmpl.Execute(w, template.HTML(data)); err != nil {
+				http.Error(w, "[ERROR] failed to render editor.", http.StatusInternalServerError)
+				return
+			}
 		})
 
 		http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodPost {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 				return
 			}
-			body, _ := io.ReadAll(r.Body)
 
-			// Try to unmarshal to validate before saving
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "[ERROR] failed to read request.", http.StatusBadRequest)
+				return
+			}
+
 			var temp resume.Resume
 			if err := json.Unmarshal(body, &temp); err != nil {
-				w.WriteHeader(400)
-				fmt.Fprintf(w, "Invalid JSON: %v", err)
+				http.Error(w, fmt.Sprintf("Invalid JSON: %v", err), http.StatusBadRequest)
 				return
 			}
 
-			err := resume.Write(&temp)
-			if err != nil {
-				w.WriteHeader(500)
+			if err := resume.Write(&temp); err != nil {
+				http.Error(w, "[ERROR] failed to save resume.", http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(200)
+
+			w.WriteHeader(http.StatusOK)
 		})
 
-		fmt.Println("[INFO] Orvexa Editor started.")
+		fmt.Println("[INFO] Orvexa Editor starting...")
 		fmt.Println("[INFO] Local Network Link: http://localhost:9090")
 		fmt.Println("[INFO] Press Ctrl+C to disconnect from the network.")
-		http.ListenAndServe(":9090", nil)
+
+		if err := http.ListenAndServe(":9090", nil); err != nil {
+			fmt.Printf("[ERROR] Editor server stopped: %v\n", err)
+		}
 	},
 }
