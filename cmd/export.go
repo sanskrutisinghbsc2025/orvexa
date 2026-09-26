@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/spf13/cobra"
 )
@@ -85,7 +86,13 @@ var exportCmd = &cobra.Command{
 
 		// 3. Use Rod to capture PDF
 		time.Sleep(500 * time.Millisecond)
-		browser := rod.New().MustConnect()
+		edgePath := `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`
+		u := launcher.New().
+			Bin(edgePath).
+			Headless(true).
+			Leakless(false).
+			MustLaunch()
+		browser := rod.New().ControlURL(u).MustConnect()
 		defer browser.MustClose()
 
 		page := browser.MustPage("http://localhost:7331")
