@@ -4,7 +4,7 @@
 # 🍄 Orvexa: The Resume Versioning Network
 
 ![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)
-![Release](https://img.shields.io/github/v/release/DewashishCodes/orvexa)
+![Release](https://img.shields.io/github/v/release/sanskrutisinghbsc2025/orvexa)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 Orvexa is a version control system designed to manage the lifecycle of professional resumes. Instead of tracking binary files, Orvexa tracks structured career data (JSON), allowing for semantic versioning, branching for specific job roles, and automated high-fidelity PDF generation.
@@ -14,14 +14,14 @@ Orvexa is a version control system designed to manage the lifecycle of professio
 
 ### 1. The Quickest Way (Download Binary)
 No coding knowledge required.
-1. Go to the [Latest Releases](https://github.com/DewashishCodes/orvexa/releases/latest).
+1. Go to the [Latest Releases](https://github.com/sanskrutisinghbsc2025/orvexa/releases/latest).
 2. Download the `.zip` or `.tar.gz` file for your OS (e.g., `orvexa_Windows_x86_64.zip`).
 3. Extract the `orvexa.exe` and move it to a folder in your **System PATH**.
 4. Open your terminal and type `orvexa version`.
 
 ### 2. For Developers (Go installed)
 ```bash
-go install github.com/DewashishCodes/orvexa@latest
+go install github.com/sanskrutisinghbsc2025/orvexa@latest
 ```
 
 ---
@@ -46,7 +46,7 @@ go install github.com/DewashishCodes/orvexa@latest
 
 **1. Getting Started (The Onboarding)**
 - **Installation (Non-Devs):** Step-by-step for Windows/Mac/Linux. Download from Releases -> Extract -> Add to PATH.
-- **Installation (Go Devs):** Use `go install github.com/DewashishCodes/orvexa@latest`.
+- **Installation (Go Devs):** Use `go install github.com/sanskrutisinghbsc2025/orvexa@latest`.
 - **First Run:** Running `orvexa init` to bootstrap the network with the 'John Doe' professional template.
 
 **2. The Management Suite (Editing & Exporting)**
@@ -75,7 +75,7 @@ go install github.com/DewashishCodes/orvexa@latest
 
 The Orvexa network grows through community input! 
 
-- **Found a Bug?** Open an [Issue](https://github.com/DewashishCodes/orvexa/issues). I will review and work on them actively.
+- **Found a Bug?** Open an [Issue](https://github.com/sanskrutisinghbsc2025/orvexa/issues). I will review and work on them actively.
 - **Have a Feature Idea?** We would love to hear about new templates or AI features.
 - **Contributing Code**: 
     1. Fork the repo.
@@ -88,4 +88,4 @@ The Orvexa network grows through community input!
 ## ⚖️ License
 Distributed under the MIT License. 
 
-*Built with ❤️ by [Dewashish Lambore](https://github.com/DewashishCodes)*
+*Built with ❤️ by [Sanskruti Singh](https://github.com/sanskrutisinghbsc2025)*
