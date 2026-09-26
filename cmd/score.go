@@ -55,12 +55,7 @@ RESUME DATA:
 %s
 `, string(resumeData))
 
-		resp, err := client.Models.GenerateContent(
-			ctx,
-			"gemini-3.5-flash",
-			genai.Text(prompt),
-			nil,
-		)
+		resp, err := generateAIContent(ctx, client, prompt)
 		if err != nil {
 			fmt.Println("[ERROR] AI Error:", err)
 			return

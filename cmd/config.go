@@ -34,7 +34,7 @@ var configCmd = &cobra.Command{
 		cfg := Config{GeminiKey: key}
 		data, _ := json.MarshalIndent(cfg, "", "  ")
 
-		os.WriteFile(configPath, data, 0644)
+		os.WriteFile(configPath, data, 0600)
 		fmt.Println("[SUCCESS] API Key saved to", configPath)
 	},
 }
