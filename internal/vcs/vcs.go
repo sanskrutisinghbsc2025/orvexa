@@ -5,6 +5,7 @@ package vcs
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -85,7 +86,12 @@ func (r *Repo) DeleteBranch(name string) error {
 	if current, _ := r.CurrentBranch(); current == name {
 		return fmt.Errorf("cannot delete an active branch")
 	}
-	return r.gitRepo.Storer.RemoveReference(plumbing.NewBranchReferenceName(name))
+	refName := plumbing.NewBranchReferenceName(name)
+	// RemoveReference succeeds silently for missing refs, so check first.
+	if _, err := r.gitRepo.Reference(refName, false); err != nil {
+		return fmt.Errorf("branch '%s' does not exist", name)
+	}
+	return r.gitRepo.Storer.RemoveReference(refName)
 }
 
 // Commit saves changes to resume.json with a message.
@@ -166,5 +172,9 @@ func (r *Repo) Restore(shortHash string, force bool) (string, error) {
 // Sync performs a git rebase of the current branch onto the target branch.
 // Currently wraps system git due to complexity of rebase in go-git.
 func (r *Repo) Sync(targetBranch string) ([]byte, error) {
+	// Never let the branch name be interpreted as a git option.
+	if strings.HasPrefix(targetBranch, "-") {
+		return nil, fmt.Errorf("invalid branch name %q", targetBranch)
+	}
 	return exec.Command("git", "rebase", targetBranch).CombinedOutput()
 }

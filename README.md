@@ -62,7 +62,7 @@ go install github.com/sanskrutisinghbsc2025/orvexa@latest
 - **`orvexa sync [branch]`:** The rebase logic. Explain how to pull updates from 'main' into a specialized branch.
 
 **4. Intelligence Layer (AI Audit)**
-- **`orvexa config --key [key]`:** Guide on obtaining a Google Gemini API key and storing it locally in `~/.cvvc_config.json`.
+- **`orvexa config --key [key]`:** Guide on obtaining a Google Gemini API key and storing it locally in `~/.orvexa_config.json`.
 - **`orvexa review --role="[title]"`:** Detail the AI Audit feature. Explain how it provides a Role-Match score, missing keywords, and bullet point strengthening.
 
 **5. Advanced Configuration**

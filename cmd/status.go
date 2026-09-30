@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"orvexa/internal/resume"
 	"orvexa/internal/ui"
 	"orvexa/internal/vcs"
 
@@ -44,11 +45,14 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		// resume.json may not exist in the status map when there
-		// are changes only in other files, so check safely.
-		resumeStatus, exists := status["resume.json"]
+		// Only resume.json matters: 'orvexa commit' never saves other files
+		// (e.g. .gitignore), so they must not trigger the warning. An unchanged
+		// resume.json is absent from the status map (Status.File() would report
+		// it as Untracked, so use a plain lookup). Check both staging and
+		// worktree so staged-only changes (e.g. after 'orvexa restore') count.
+		fs, listed := status[resume.ResumeFile]
 
-		if exists && resumeStatus.Worktree == git.Unmodified {
+		if !listed || (fs.Staging == git.Unmodified && fs.Worktree == git.Unmodified) {
 			ui.PrintSuccess("Orvexa network is healthy (metadata changes ignored).")
 		} else {
 			ui.PrintWarning("Uncommitted changes detected in the network.")

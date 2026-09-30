@@ -9,7 +9,7 @@ import (
 	"google.golang.org/genai"
 )
 
-const geminiModel = "gemini-3.8-flash"
+const geminiModel = "gemini-flash-latest"
 
 // generateAIContent sends a request to Gemini and retries temporary
 // service-unavailable errors automatically.

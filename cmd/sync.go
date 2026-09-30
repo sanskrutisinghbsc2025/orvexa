@@ -29,6 +29,10 @@ var syncCmd = &cobra.Command{
 
 		out, err := r.Sync(targetBranch)
 		if err != nil {
+			if len(out) == 0 {
+				fmt.Println("[ERROR]", err)
+				return
+			}
 			fmt.Println("[ERROR] Sync conflict detected!")
 			fmt.Println(string(out))
 			fmt.Println("[INFO] Use standard git tools to resolve conflicts, or 'git rebase --abort'.")
