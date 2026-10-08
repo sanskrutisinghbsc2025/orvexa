@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"orvexa/internal/resume"
 
 	"github.com/spf13/cobra"
@@ -57,14 +59,88 @@ RESUME DATA:
 %s
 `, string(resumeData))
 
-		resp, err := generateAIContent(ctx, client, prompt)
+		resp, model, err := generateWithFallback(ctx, client, prompt)
 		if err != nil {
 			fmt.Println("[ERROR] AI Error:", err)
 			return
 		}
 
+		fmt.Printf("[AI] Response generated using %s\n", model)
 		fmt.Println("\n--- AI-IMPROVED RESUME ---")
 		fmt.Println(resp.Text())
 		fmt.Println("\n------------------------------------------------")
 	},
+}
+
+// Models are tried in order.
+// If the first model is temporarily unavailable, Orvexa moves to the next one.
+var fallbackModels = []string{
+	"gemini-3.8-flash",
+	"gemini-3.7-flash",
+	"gemini-3.6-flash",
+	"gemini-3.5-flash",
+	"gemini-3.5-flash-lite",
+}
+
+func generateWithFallback(
+	ctx context.Context,
+	client *genai.Client,
+	prompt string,
+) (*genai.GenerateContentResponse, string, error) {
+
+	var lastErr error
+
+	for _, model := range fallbackModels {
+		fmt.Printf("[AI] Trying %s...\n", model)
+
+		resp, err := client.Models.GenerateContent(
+			ctx,
+			model,
+			genai.Text(prompt),
+			nil,
+		)
+
+		if err == nil {
+			return resp, model, nil
+		}
+
+		lastErr = err
+
+		// Only fail over for temporary/service/rate-limit errors.
+		if !isTransientAIError(err) {
+			return nil, "", err
+		}
+
+		fmt.Printf("[AI] %s unavailable. Trying next model...\n", model)
+	}
+
+	return nil, "", fmt.Errorf(
+		"all fallback models failed; last error: %v",
+		lastErr,
+	)
+}
+
+func isTransientAIError(err error) bool {
+	msg := strings.ToLower(err.Error())
+
+	transientErrors := []string{
+		"429",
+		"resource_exhausted",
+		"rate limit",
+		"too many requests",
+		"500",
+		"internal",
+		"503",
+		"unavailable",
+		"service unavailable",
+		"timeout",
+	}
+
+	for _, item := range transientErrors {
+		if strings.Contains(msg, item) {
+			return true
+		}
+	}
+
+	return false
 }
