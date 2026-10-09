@@ -4,49 +4,102 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"google.golang.org/genai"
 )
 
-const geminiModel = "gemini-flash-latest"
+// Models are tried in order.
+var fallbackModels = []string{
+	"gemini-3.8-flash",
+	"gemini-3.7-flash",
+	"gemini-3.6-flash",
+	"gemini-3.5-flash",
+	"gemini-3.5-flash-lite",
+	"gemini-flash-latest",
+}
 
-// generateAIContent sends a request to Gemini and retries temporary
-// service-unavailable errors automatically.
-func generateAIContent(ctx context.Context, client *genai.Client, prompt string) (*genai.GenerateContentResponse, error) {
+// generateAIContent keeps the existing interface used by score and review.
+func generateAIContent(
+	ctx context.Context,
+	client *genai.Client,
+	prompt string,
+) (*genai.GenerateContentResponse, error) {
+	resp, _, err := generateWithFallback(ctx, client, prompt)
+	return resp, err
+}
+
+// generateWithFallback tries each configured model until one succeeds.
+func generateWithFallback(
+	ctx context.Context,
+	client *genai.Client,
+	prompt string,
+) (*genai.GenerateContentResponse, string, error) {
 	var lastErr error
 
-	for attempt := 1; attempt <= 3; attempt++ {
+	for _, model := range fallbackModels {
+		fmt.Printf("[AI] Trying %s...\n", model)
+
 		resp, err := client.Models.GenerateContent(
 			ctx,
-			geminiModel,
+			model,
 			genai.Text(prompt),
 			nil,
 		)
 
 		if err == nil {
-			return resp, nil
+			fmt.Printf("[AI] Successfully used %s\n", model)
+			return resp, model, nil
 		}
 
 		lastErr = err
 
-		errText := strings.ToLower(err.Error())
-
-		// Retry temporary service/capacity errors.
-		if strings.Contains(errText, "503") ||
-			strings.Contains(errText, "unavailable") ||
-			strings.Contains(errText, "high demand") {
-			if attempt < 3 {
-				wait := time.Duration(attempt*2) * time.Second
-				fmt.Printf("[AI] Gemini is temporarily busy. Retrying in %d seconds... (%d/3)\n",
-					int(wait.Seconds()), attempt+1)
-				time.Sleep(wait)
-				continue
-			}
+		if !isTransientAIError(err) {
+			return nil, "", fmt.Errorf(
+				"model %s failed with a non-retryable error: %w",
+				model, err,
+			)
 		}
 
-		return nil, err
+		fmt.Printf("[AI] %s is temporarily unavailable: %v\n", model, err)
+		fmt.Println("[AI] Trying the next fallback model...")
 	}
 
-	return nil, lastErr
+	return nil, "", fmt.Errorf(
+		"all %d fallback models failed; last error: %w",
+		len(fallbackModels), lastErr,
+	)
+}
+
+// isTransientAIError identifies errors for which another model may help.
+func isTransientAIError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	msg := strings.ToLower(err.Error())
+
+	transientErrors := []string{
+		"429",
+		"resource_exhausted",
+		"rate limit",
+		"too many requests",
+		"500",
+		"internal",
+		"502",
+		"503",
+		"504",
+		"unavailable",
+		"high demand",
+		"overloaded",
+		"timeout",
+		"deadline exceeded",
+	}
+
+	for _, item := range transientErrors {
+		if strings.Contains(msg, item) {
+			return true
+		}
+	}
+
+	return false
 }
