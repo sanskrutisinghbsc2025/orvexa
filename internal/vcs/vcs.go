@@ -61,14 +61,24 @@ func (r *Repo) ListBranches() ([]string, error) {
 
 // CreateBranch creates and switches to a new branch.
 func (r *Repo) CreateBranch(name string) error {
-	w, err := r.gitRepo.Worktree()
-	if err != nil {
-		return err
+	if strings.HasPrefix(name, "-") {
+		return fmt.Errorf("invalid branch name %q", name)
 	}
-	return w.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.NewBranchReferenceName(name),
-		Create: true,
-	})
+
+	// Validate the branch name before passing it to Git.
+	checkCmd := exec.Command("git", "check-ref-format", "--branch", name)
+	if output, err := checkCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("invalid branch name %q: %s", name, strings.TrimSpace(string(output)))
+	}
+
+	// Use system Git for consistent worktree handling on Windows.
+	cmd := exec.Command("git", "switch", "-c", name)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", strings.TrimSpace(string(output)))
+	}
+
+	return nil
 }
 
 // SwitchBranch switches to an existing branch.
